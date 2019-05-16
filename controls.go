@@ -1,23 +1,22 @@
-// gtkControls.go
 package main
 
 import (
 	"fmt"
-	"image"
-	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/andlabs/ui"
 	_ "github.com/andlabs/ui/winmanifest"
-	"github.com/bamiaux/rez"
+)
+
+const (
+	INITIAL_POINT_COUNT = 192
+	DEFAULT_IMAGE       = "./Images/apple.png"
 )
 
 var (
 	functionChannel   chan func()
-	imageHandler      *imageTableHandler
 	tableModelHandler *ui.TableModel
 	imageFilename     string
 	vLineColor        = [...]float64{1, 1, 1, 1}
@@ -26,72 +25,8 @@ var (
 	chColor           = [...]float64{1, 1, 1, 1}
 )
 
-type imageTableHandler struct {
-	selectedImage *ui.Image
-}
-
-func loadImageRGBA(filename string) (*image.RGBA, float32) {
-	file, err := os.Open(filename)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer file.Close()
-	img, _, err := image.Decode(file)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	b := img.Bounds()
-	w := b.Max.X - b.Min.X
-	h := b.Max.Y - b.Min.Y
-	ratio := float32(w) / float32(h)
-	scaledImage := image.NewRGBA(image.Rect(b.Min.X, b.Min.Y, int(150*ratio)+b.Min.X, 150+b.Min.Y))
-
-	err = rez.Convert(scaledImage, img, rez.NewBicubicFilter())
-	if err != nil {
-		fmt.Println(err)
-	}
-	return scaledImage, ratio
-}
-
-func createUIImage(filename string) *ui.Image {
-	scaledImage, ratio := loadImageRGBA(filename)
-
-	uiImg := ui.NewImage(150*float64(ratio), 150)
-	uiImg.Append(scaledImage)
-	return uiImg
-}
-
-func newModelHandler(filename string) *imageTableHandler {
-	m := new(imageTableHandler)
-	m.selectedImage = createUIImage(filename)
-	return m
-}
-func (mh *imageTableHandler) ColumnTypes(m *ui.TableModel) []ui.TableValue {
-	return []ui.TableValue{
-		ui.TableImage{},
-		// Color not used right now.
-		ui.TableColor{},
-	}
-}
-func (mh *imageTableHandler) NumRows(m *ui.TableModel) int {
-	return 1
-}
-func (mh *imageTableHandler) CellValue(m *ui.TableModel, row, column int) ui.TableValue {
-
-	if row == 0 && column == 1 {
-		//return ui.TableColor{0.5, 0.5, 0, 1}
-	}
-
-	return ui.TableImage{mh.selectedImage}
-}
-func (mh *imageTableHandler) SetCellValue(m *ui.TableModel, row, column int, value ui.TableValue) {
-	fmt.Printf("Set Cell Value\n")
-}
-
-func createFileOpenButton(mainwin *ui.Window, c chan func(), handler *imageTableHandler, tableHandler *ui.TableModel) *ui.Button {
-	button := ui.NewButton("Open New Image")
+func createFileOpenButton(mainwin *ui.Window, c chan func()) *ui.Button {
+	button := ui.NewButton("Open Image")
 	button.OnClicked(func(*ui.Button) {
 		filename := ui.OpenFile(mainwin)
 		if filename != "" {
@@ -103,8 +38,6 @@ func createFileOpenButton(mainwin *ui.Window, c chan func(), handler *imageTable
 				time.Sleep(50 * time.Millisecond)
 				ReadyForRender(true)
 			}
-			handler.selectedImage = createUIImage(filename)
-			tableHandler.RowChanged(0)
 		}
 	})
 	return button
@@ -128,36 +61,17 @@ func createFileSaveButton(mainwin *ui.Window, c chan func()) *ui.Button {
 	return button
 }
 
-func createImageOperations(mainwin *ui.Window, c chan func(), handler *imageTableHandler, tableHandler *ui.TableModel) *ui.Grid {
+func createImageLoadSaveOperations(mainwin *ui.Window, c chan func()) *ui.Grid {
 	grid := ui.NewGrid()
 	grid.SetPadded(true)
 
-	imageLoad := createFileOpenButton(mainwin, c, handler, tableHandler)
+	imageLoad := createFileOpenButton(mainwin, c)
 	imageSave := createFileSaveButton(mainwin, c)
 
 	grid.Append(imageLoad, 0, 0, 1, 1, false, ui.AlignFill, true, ui.AlignFill)
-	grid.Append(imageSave, 0, 1, 1, 1, false, ui.AlignFill, true, ui.AlignFill)
+	grid.Append(imageSave, 1, 0, 1, 1, false, ui.AlignFill, true, ui.AlignFill)
 
 	return grid
-}
-
-func createImageTable(filename string) (*ui.Box, *imageTableHandler, *ui.TableModel) {
-	modelHandler := newModelHandler(filename)
-	tableModel := ui.NewTableModel(modelHandler)
-	table := ui.NewTable(&ui.TableParams{
-		Model:                         tableModel,
-		RowBackgroundColorModelColumn: 1,
-	})
-
-	// The integer (0) is an index into the []ui.TableValue{} slice to determine the type at runtime!
-	table.AppendImageColumn("Selected Image (preview)", 0)
-
-	table.Disable()
-
-	hbox := ui.NewVerticalBox()
-	hbox.SetPadded(false)
-	hbox.Append(table, true)
-	return hbox, modelHandler, tableModel
 }
 
 func createPointCountButtons(c chan func()) *ui.Box {
@@ -362,7 +276,7 @@ func createCHColorButton(c chan func()) *ui.ColorButton {
 
 func setupUI() {
 
-	mainwin := ui.NewWindow("Geometry Controls", 360, 680, true)
+	mainwin := ui.NewWindow("Geometry Controls", 360, 500, true)
 	mainwin.SetMargined(true)
 	mainwin.OnClosing(func(*ui.Window) bool {
 		fmt.Printf("Close.\n")
@@ -378,13 +292,8 @@ func setupUI() {
 	grid := ui.NewGrid()
 	grid.SetPadded(true)
 
-	image, handler, tableModel := createImageTable(imageFilename)
-	imageHandler = handler
-	tableModelHandler = tableModel
-	//imageSelect := createFileOpenButton(mainwin, functionChannel, imageHandler, tableModelHandler)
-	//imageSave := createFileSaveButton(mainwin, functionChannel)
-
-	imageGrid := createImageOperations(mainwin, functionChannel, imageHandler, tableModelHandler)
+	imageOpLable := ui.NewLabel("Image operations")
+	imageOpGrid := createImageLoadSaveOperations(mainwin, functionChannel)
 
 	pointLable := ui.NewLabel("Point Count")
 	pointButtons := createPointCountButtons(functionChannel)
@@ -411,8 +320,8 @@ func setupUI() {
 	chColorButton := createCHColorButton(functionChannel)
 
 	gridYPos := 0
-	grid.Append(imageGrid, 0, gridYPos, 1, 1, false, ui.AlignFill, false, ui.AlignStart)
-	grid.Append(image, 1, gridYPos, 1, 1, true, ui.AlignFill, true, ui.AlignFill)
+	grid.Append(imageOpLable, 0, gridYPos, 1, 1, false, ui.AlignFill, false, ui.AlignStart)
+	grid.Append(imageOpGrid, 1, gridYPos, 1, 1, false, ui.AlignFill, false, ui.AlignFill)
 	gridYPos++
 	grid.Append(ui.NewHorizontalSeparator(), 0, gridYPos, 2, 1, false, ui.AlignFill, false, ui.AlignFill)
 	gridYPos++
@@ -524,13 +433,9 @@ func main() {
 		ui.Quit()
 	}()
 
-	initialPointCount := 192
-	dir, _ := filepath.Split(os.Args[0])
-	defaultImage := dir + "Images/apple.png"
+	go createGUI(&wg, functionChannel, INITIAL_POINT_COUNT, DEFAULT_IMAGE)
 
-	go createGUI(&wg, functionChannel, initialPointCount, defaultImage)
-
-	InitializeGeoRender(functionChannel, closingChannel, initialPointCount, defaultImage)
+	InitializeRender(functionChannel, closingChannel, INITIAL_POINT_COUNT, DEFAULT_IMAGE)
 
 	wg.Wait()
 
