@@ -2,9 +2,9 @@
 
 This project implements a small, lightweight tool for real-time image manipulation with Voronoi/Delaunay data structures.
 
-The focus of this project was, to enable users without knowledge of voronoi or delaunay specifics, to experiment and play with different looks a voronoi or delaunay structure can give to an image.
+The focus of this project was, to enable users without knowledge of Voronoi or Delaunay specifics, to experiment and play with different looks a Voronoi or Delaunay structure can give to an image.
 
-Some time ago I implemented a similar effect (also voronoi/delaunay) in Python ([github.com/MauriceGit/Delaunay_Triangulation](https://github.com/MauriceGit/Delaunay_Triangulation)). The main goal for this project was, to make it a lot more robust, user friendly, fast and usable.
+Some time ago I implemented a similar effect (also Voronoi/Delaunay) in Python ([github.com/MauriceGit/Delaunay_Triangulation](https://github.com/MauriceGit/Delaunay_Triangulation)). The main goal for this new project was, to make it a lot more robust, user friendly, fast and actually useable.
 
 ## Interface:
 
@@ -18,11 +18,15 @@ Image view                 |  Control view
 
 - Graphics card supporting OpenGL 3.3
 - Windows users: Have mingw64 installed. Other C compilers might or might not work. Please report back if it works or submit necessary changes to this README.
+- Have Go (Golang) installed on your system.
 
 ## Run:
 
-- run ```go get ./...``` to install all dependencies
-- run ```go build``` within the projects directory
+- Download this repository or run ```git clone https://github.com/MauriceGit/Voronoi_Image_Manipulation```
+- Enter the project directory
+- Run ```go get ./...``` to install all dependencies
+- Run ```go build``` within the projects directory
+- Run the created executable.
 - Do not remove the _Images/apple.png_ directory. This image is loaded by default when the program starts.
 
 ## Screenshots and usecases:
@@ -50,7 +54,7 @@ Set the _Face Rendering_ to _Delaunay Triangles_.
 An image of a Labrador with Poisson disk distributed points.
 ![Voronoi faces](Screenshots/voronoi_controls.png)
 
-If you like you can add the voronoi lines and points to actually display the underlaying data structure.
+If you like you can add the Voronoi lines and points to actually display the underlaying data structure.
 ![Voronoi lines and points](Screenshots/voronoi_lines_points.png)
 
 ![Voronoi lines](Screenshots/ara_voronoi.png)
@@ -59,16 +63,16 @@ If you like you can add the voronoi lines and points to actually display the und
 
 ![Sunset voronoi](Screenshots/voronoi_sunset.png)
 
-When checking _Adaptive Color_, the lines of delaunay edges and points will get the average color of the image underneath. Creating an interesting effect.
+When checking _Adaptive Color_, the lines of Delaunay edges and points will get the average color of the image underneath. Creating an interesting effect.
 ![Adaptive Color](Screenshots/adaptive_ara.png)
 
 _Adaptive Color_ checked with Voronoi faces and points displayed with a grid layout.
 ![Adaptive Color voronoi](Screenshots/adaptive_points_voronoi.png)
 
-You could just view the points as well (well that doesn't really use voronoi/delaunay any more. But still looks cool :)).
+You could just view the points as well (well that doesn't really use Voronoi/Delaunay any more. But still looks cool :)).
 ![Just points](Screenshots/points_ara.png)
 
-At last, you can just ignore the image to investigate/look at voronoi and delaunay tessellations itself:
+At last, you can just ignore the image to investigate/look at voronoi and Delaunay tessellation itself:
 ![Just voronoi](Screenshots/random_voronoi.png)
 
 ![Just voronoi and delaunay](Screenshots/voronoi_delaunay_controls.png)

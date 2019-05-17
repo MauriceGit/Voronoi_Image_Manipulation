@@ -47,7 +47,7 @@ func CreateShiftedGridPoints(count int, rangeX, rangeY, margin float64) v.PointL
 			shift = r / 2.0
 		}
 
-		for j := margin; j <= rangeX-margin; j += r {
+		for j := margin; j <= rangeY-margin; j += r {
 			if j+shift <= rangeY-margin {
 				pointList = append(pointList, v.Vector{i, j + shift, 0})
 			}
