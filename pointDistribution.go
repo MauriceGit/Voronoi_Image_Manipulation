@@ -23,7 +23,7 @@ func CreateGridPoints(count int, rangeX, rangeY, margin float64) v.PointList {
 	r := calcExpectedRadius(count, rangeX, rangeY, margin)
 
 	for i := margin; i <= rangeX-margin; i += r {
-		for j := margin; j <= rangeX-margin; j += r {
+		for j := margin; j <= rangeY-margin; j += r {
 			pointList = append(pointList, v.Vector{i, j, 0})
 		}
 	}
@@ -48,7 +48,7 @@ func CreateShiftedGridPoints(count int, rangeX, rangeY, margin float64) v.PointL
 		}
 
 		for j := margin; j <= rangeX-margin; j += r {
-			if j+shift <= rangeX-margin {
+			if j+shift <= rangeY-margin {
 				pointList = append(pointList, v.Vector{i, j + shift, 0})
 			}
 		}

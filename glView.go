@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	g_windowTitle    = "Delaunay/Voronoi GL Demo"
+	g_windowTitle    = "Delaunay/Voronoi Image Manipulation"
 	g_delaunayMargin = 10.0
 	g_maxWindowSize  = 1000
 )
