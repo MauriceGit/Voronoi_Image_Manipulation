@@ -45,6 +45,8 @@ Set the _Face Rendering_ to _Delaunay Triangles_.
 
 ![Delaunay faces](Screenshots/delaunay_tiger.png)
 
+![Sunset delaunay](Screenshots/delaunay_sunset.png)
+
 An image of a Labrador with Poisson disk distributed points.
 ![Voronoi faces](Screenshots/voronoi_controls.png)
 
@@ -55,9 +57,7 @@ If you like you can add the voronoi lines and points to actually display the und
 
 ![Voronoi lines](Screenshots/voronoi_rose.png)
 
-Sunset with Voronoi        |  Sunset with Delaunay
-:-------------------------:|:-------------------------:
-![Sunset voronoi](Screenshots/voronoi_sunset.png)  |  ![Sunset delaunay](Screenshots/delaunay_sunset.png)
+![Sunset voronoi](Screenshots/voronoi_sunset.png)
 
 When checking _Adaptive Color_, the lines of delaunay edges and points will get the average color of the image underneath. Creating an interesting effect.
 ![Adaptive Color](Screenshots/adaptive_ara.png)
