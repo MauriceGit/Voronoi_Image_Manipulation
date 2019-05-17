@@ -292,7 +292,7 @@ func setupUI() {
 	grid := ui.NewGrid()
 	grid.SetPadded(true)
 
-	imageOpLable := ui.NewLabel("Image operations")
+	imageOpLable := ui.NewLabel("Image Operations")
 	imageOpGrid := createImageLoadSaveOperations(mainwin, functionChannel)
 
 	pointLable := ui.NewLabel("Point Count")
@@ -301,7 +301,7 @@ func setupUI() {
 	distLable := ui.NewLabel("Point Distribution")
 	distButton := createPointDistributionButtons(functionChannel)
 
-	faceLable := ui.NewLabel("Face rendering")
+	faceLable := ui.NewLabel("Face Rendering")
 	faceButton := createFaceRenderingButtons(functionChannel)
 
 	generalLable := ui.NewLabel("General")
