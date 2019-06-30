@@ -6,7 +6,8 @@ import (
 	"math"
 	"math/rand"
 
-	v "github.com/MauriceGit/mtVector"
+	//v "github.com/MauriceGit/mtVector"
+	sc "mtSweepCircle"
 )
 
 func calcExpectedRadius(count int, rangeX, rangeY, margin float64) float64 {
@@ -17,22 +18,22 @@ func calcExpectedRadius(count int, rangeX, rangeY, margin float64) float64 {
 	return square / math.Sqrt(newCount)
 }
 
-func CreateGridPoints(count int, rangeX, rangeY, margin float64) v.PointList {
-	var pointList v.PointList
+func CreateGridPoints(count int, rangeX, rangeY, margin float64) []sc.Vector {
+	var pointList []sc.Vector
 
 	r := calcExpectedRadius(count, rangeX, rangeY, margin)
 
 	for i := margin; i <= rangeX-margin; i += r {
 		for j := margin; j <= rangeY-margin; j += r {
-			pointList = append(pointList, v.Vector{i, j, 0})
+			pointList = append(pointList, sc.Vector{i, j})
 		}
 	}
 
 	return pointList
 }
 
-func CreateShiftedGridPoints(count int, rangeX, rangeY, margin float64) v.PointList {
-	var pointList v.PointList
+func CreateShiftedGridPoints(count int, rangeX, rangeY, margin float64) []sc.Vector {
+	var pointList []sc.Vector
 
 	r := calcExpectedRadius(count, rangeX, rangeY, margin)
 
@@ -49,7 +50,7 @@ func CreateShiftedGridPoints(count int, rangeX, rangeY, margin float64) v.PointL
 
 		for j := margin; j <= rangeY-margin; j += r {
 			if j+shift <= rangeY-margin {
-				pointList = append(pointList, v.Vector{i, j + shift, 0})
+				pointList = append(pointList, sc.Vector{i, j + shift})
 			}
 		}
 
@@ -59,36 +60,36 @@ func CreateShiftedGridPoints(count int, rangeX, rangeY, margin float64) v.PointL
 	return pointList
 }
 
-func CreateRandomPoints(count int, rangeX, rangeY, margin float64, seed int64) v.PointList {
+func CreateRandomPoints(count int, rangeX, rangeY, margin float64, seed int64) []sc.Vector {
 	//var seed int64 = time.Now().UTC().UnixNano()
 	r := rand.New(rand.NewSource(seed))
-	var pointList v.PointList
+	var pointList []sc.Vector
 
 	for i := 0; i < count; i++ {
-		v := v.Vector{r.Float64()*(rangeX-2*margin) + margin, r.Float64()*(rangeY-2*margin) + margin, 0}
+		v := sc.Vector{r.Float64()*(rangeX-2*margin) + margin, r.Float64()*(rangeY-2*margin) + margin}
 		pointList = append(pointList, v)
 	}
 	return pointList
 }
 
-func randVec(base v.Vector, minR, maxR float64, rd *rand.Rand) v.Vector {
+func randVec(base sc.Vector, minR, maxR float64, rd *rand.Rand) sc.Vector {
 	vx := rd.Float64()*(maxR-minR) + minR
 	vy := 0.0
 	a := rd.Float64() * 2.0 * math.Pi
-	return v.Vector{base.X + vx*math.Cos(a) - vy*math.Sin(a), base.Y + vy*math.Cos(a) + vx*math.Sin(a), 0}
+	return sc.Vector{base.X + vx*math.Cos(a) - vy*math.Sin(a), base.Y + vy*math.Cos(a) + vx*math.Sin(a)}
 }
 
-func getGridPos(p v.Vector, f float64) (int, int) {
+func getGridPos(p sc.Vector, f float64) (int, int) {
 	return int(math.Floor(p.X / f)), int(math.Floor(p.Y / f))
 }
 
-func fits(grid *[]int, pointList *v.PointList, p v.Vector, r float64, gx, gy, width, height int) bool {
+func fits(grid *[]int, pointList []sc.Vector, p sc.Vector, r float64, gx, gy, width, height int) bool {
 	for i := int(math.Max(float64(gx)-2, 0)); i < int(math.Min(float64(gx)+3, float64(width))); i++ {
 		for j := int(math.Max(float64(gy)-2, 0)); j < int(math.Min(float64(gy)+3, float64(height))); j++ {
 			pg := (*grid)[i+j*width]
 			if pg != -1 {
-				pgp := (*pointList)[pg]
-				if v.Length(v.Sub(p, pgp)) <= r {
+				pgp := pointList[pg]
+				if sc.Length(sc.Sub(p, pgp)) <= r {
 					return false
 				}
 			}
@@ -97,7 +98,7 @@ func fits(grid *[]int, pointList *v.PointList, p v.Vector, r float64, gx, gy, wi
 	return true
 }
 
-func CreateFastPoissonDiscPoints(count int, rangeX, rangeY, margin float64, k int, seed int64) v.PointList {
+func CreateFastPoissonDiscPoints(count int, rangeX, rangeY, margin float64, k int, seed int64) []sc.Vector {
 
 	r := calcExpectedRadius(count, rangeX, rangeY, margin)
 
@@ -113,10 +114,10 @@ func CreateFastPoissonDiscPoints(count int, rangeX, rangeY, margin float64, k in
 		grid[i] = -1
 	}
 
-	var pointList v.PointList
-	var activeList v.PointList
+	var pointList []sc.Vector
+	var activeList []sc.Vector
 
-	p := v.Vector{rd.Float64()*(rangeX-2*margin) + margin, rd.Float64()*(rangeY-2*margin) + margin, 0}
+	p := sc.Vector{rd.Float64()*(rangeX-2*margin) + margin, rd.Float64()*(rangeY-2*margin) + margin}
 
 	pointList = append(pointList, p)
 	activeList = append(activeList, p)
@@ -135,7 +136,7 @@ func CreateFastPoissonDiscPoints(count int, rangeX, rangeY, margin float64, k in
 
 			if p.X >= margin && p.X < rangeX-margin && p.Y >= margin && p.Y < rangeY-margin {
 				gridX, gridY = getGridPos(p, cellSize)
-				if fits(&grid, &pointList, p, r, gridX, gridY, gridWidth, gridHeight) {
+				if fits(&grid, pointList, p, r, gridX, gridY, gridWidth, gridHeight) {
 					activeList = append(activeList, p)
 					pointList = append(pointList, p)
 					grid[gridX+gridY*gridWidth] = len(pointList) - 1

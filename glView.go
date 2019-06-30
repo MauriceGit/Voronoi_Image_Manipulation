@@ -10,7 +10,9 @@ import (
 
 	geo "github.com/MauriceGit/mtGeometry"
 	mtgl "github.com/MauriceGit/mtOpenGL"
-	v "github.com/MauriceGit/mtVector"
+
+	//v "github.com/MauriceGit/mtVector"
+	//sc "mtSweepCircle"
 	sc "github.com/MauriceGit/sweepcircle"
 
 	"github.com/fogleman/gg"
@@ -151,8 +153,8 @@ func drawImage(d sc.Delaunay, name string) {
 
 		dc.SetRGB(0, 0, 0)
 
-		v1 := v.Vector{}
-		v2 := v.Vector{}
+		v1 := sc.Vector{}
+		v2 := sc.Vector{}
 
 		// For the Voronoi case
 		shouldContinue := false
@@ -163,11 +165,11 @@ func drawImage(d sc.Delaunay, name string) {
 		// Only the left one is empty
 		case e.VOrigin == sc.EmptyVertex:
 			v2 = d.Vertices[d.Edges[e.ETwin].VOrigin].Pos
-			v1 = v.Add(e.TmpEdge.Pos, v.Mult(e.TmpEdge.Dir, 0.2))
+			v1 = sc.Add(e.TmpEdge.Pos, sc.Mult(e.TmpEdge.Dir, 0.2))
 		// Only the right one is empty
 		case d.Edges[e.ETwin].VOrigin == sc.EmptyVertex:
 			v1 = d.Vertices[e.VOrigin].Pos
-			v2 = v.Add(e.TmpEdge.Pos, v.Mult(e.TmpEdge.Dir, 0.2))
+			v2 = sc.Add(e.TmpEdge.Pos, sc.Mult(e.TmpEdge.Dir, 0.2))
 		// No one is empty!
 		default:
 			v1 = d.Vertices[e.VOrigin].Pos
@@ -185,10 +187,11 @@ func drawImage(d sc.Delaunay, name string) {
 		dc.DrawString(fmt.Sprintf("(%.1f, %.1f)", v1.X, v1.Y), v1.X, imageSizeY-v1.Y)
 
 		dc.SetRGB(0, 0.5, 0)
-		middleP := v.Vector{(v1.X + v2.X) / 2., (v1.Y + v2.Y) / 2., 0}
-		ortho := v.Vector{0, 0, 1}
-		crossP := v.Cross(v.Sub(v1, v2), ortho)
-		crossP.Div(v.Length(crossP))
+		middleP := sc.Vector{(v1.X + v2.X) / 2., (v1.Y + v2.Y) / 2.}
+		//ortho := sc.Vector{0, 0, 1}
+		//crossP := sc.Cross(sc.Sub(v1, v2), ortho)
+		crossP := sc.Perpendicular(sc.Sub(v1, v2))
+		crossP.Div(sc.Length(crossP))
 		crossP.Mult(15.)
 
 		middleP.Add(crossP)
@@ -225,7 +228,7 @@ func drawImage(d sc.Delaunay, name string) {
 
 func createDelaunay(count int, rangeX, rangeY, margin float64) sc.Delaunay {
 
-	var list v.PointList
+	var list []sc.Vector
 
 	var seed int64 = int64(count)
 
@@ -269,9 +272,9 @@ func createDelaunayGLBuffer(d sc.Delaunay, rangeX, rangeY float64) geo.ArrayGeom
 
 		averageUV := uv1.Add(uv2.Add(uv3)).Mul(1.0 / 3.0)
 
-		mesh[i*3] = geo.Mesh{mgl32.Vec3{float32(v1.X), float32(v1.Y), float32(v1.Z)}, mgl32.Vec3{0.0, 0.0, 1.0}, averageUV}
-		mesh[i*3+1] = geo.Mesh{mgl32.Vec3{float32(v2.X), float32(v2.Y), float32(v2.Z)}, mgl32.Vec3{0.0, 0.0, 1.0}, averageUV}
-		mesh[i*3+2] = geo.Mesh{mgl32.Vec3{float32(v3.X), float32(v3.Y), float32(v3.Z)}, mgl32.Vec3{0.0, 0.0, 1.0}, averageUV}
+		mesh[i*3] = geo.Mesh{mgl32.Vec3{float32(v1.X), float32(v1.Y), 0}, mgl32.Vec3{0.0, 0.0, 1.0}, averageUV}
+		mesh[i*3+1] = geo.Mesh{mgl32.Vec3{float32(v2.X), float32(v2.Y), 0}, mgl32.Vec3{0.0, 0.0, 1.0}, averageUV}
+		mesh[i*3+2] = geo.Mesh{mgl32.Vec3{float32(v3.X), float32(v3.Y), 0}, mgl32.Vec3{0.0, 0.0, 1.0}, averageUV}
 	}
 
 	return geo.GenerateGeometryArrayAttributes(&mesh, len(mesh))
@@ -291,8 +294,8 @@ func createVoronoiGLBuffer(vo sc.Voronoi, rangeX, rangeY float64) geo.ArrayGeome
 		e0 := f.EEdge
 		e1 := vo.Edges[e0].ENext
 
-		v0 := v.Vector{}
-		v1 := v.Vector{}
+		v0 := sc.Vector{}
+		v1 := sc.Vector{}
 
 		// For the Voronoi case
 		shouldBreak := false
@@ -303,11 +306,11 @@ func createVoronoiGLBuffer(vo sc.Voronoi, rangeX, rangeY float64) geo.ArrayGeome
 		// Only the left one is empty
 		case vo.Edges[e0].VOrigin == sc.EmptyVertex:
 			v1 = vo.Vertices[vo.Edges[vo.Edges[e0].ETwin].VOrigin].Pos
-			v0 = v.Add(vo.Edges[e0].TmpEdge.Pos, v.Mult(vo.Edges[e0].TmpEdge.Dir, -10.0))
+			v0 = sc.Add(vo.Edges[e0].TmpEdge.Pos, sc.Mult(vo.Edges[e0].TmpEdge.Dir, -10.0))
 		// Only the right one is empty
 		case vo.Edges[vo.Edges[e0].ETwin].VOrigin == sc.EmptyVertex:
 			v0 = vo.Vertices[vo.Edges[e0].VOrigin].Pos
-			v1 = v.Add(vo.Edges[e0].TmpEdge.Pos, v.Mult(vo.Edges[e0].TmpEdge.Dir, -10.0))
+			v1 = sc.Add(vo.Edges[e0].TmpEdge.Pos, sc.Mult(vo.Edges[e0].TmpEdge.Dir, -10.0))
 		// No one is empty!
 		default:
 			v0 = vo.Vertices[vo.Edges[e0].VOrigin].Pos
@@ -324,17 +327,17 @@ func createVoronoiGLBuffer(vo sc.Voronoi, rangeX, rangeY float64) geo.ArrayGeome
 		for e1 != sc.EmptyEdge && e1 != e0 {
 
 			v1 = vo.Vertices[vo.Edges[e1].VOrigin].Pos
-			v2 := v.Vector{}
+			v2 := sc.Vector{}
 			if vo.Edges[vo.Edges[e1].ETwin].VOrigin == sc.EmptyVertex {
-				v2 = v.Add(vo.Edges[e1].TmpEdge.Pos, v.Mult(vo.Edges[e1].TmpEdge.Dir, -10.0))
+				v2 = sc.Add(vo.Edges[e1].TmpEdge.Pos, sc.Mult(vo.Edges[e1].TmpEdge.Dir, -10.0))
 			} else {
 				v2 = vo.Vertices[vo.Edges[vo.Edges[e1].ETwin].VOrigin].Pos
 			}
 
 			// The assigned averageUV is not correct and must be overwritten later! (Just placeholder now for the real one later)
-			mesh = append(mesh, geo.Mesh{mgl32.Vec3{float32(v0.X), float32(v0.Y), float32(v0.Z)}, mgl32.Vec3{0.0, 0.0, 1.0}, averageUV})
-			mesh = append(mesh, geo.Mesh{mgl32.Vec3{float32(v1.X), float32(v1.Y), float32(v1.Z)}, mgl32.Vec3{0.0, 0.0, 1.0}, averageUV})
-			mesh = append(mesh, geo.Mesh{mgl32.Vec3{float32(v2.X), float32(v2.Y), float32(v2.Z)}, mgl32.Vec3{0.0, 0.0, 1.0}, averageUV})
+			mesh = append(mesh, geo.Mesh{mgl32.Vec3{float32(v0.X), float32(v0.Y), 0}, mgl32.Vec3{0.0, 0.0, 1.0}, averageUV})
+			mesh = append(mesh, geo.Mesh{mgl32.Vec3{float32(v1.X), float32(v1.Y), 0}, mgl32.Vec3{0.0, 0.0, 1.0}, averageUV})
+			mesh = append(mesh, geo.Mesh{mgl32.Vec3{float32(v2.X), float32(v2.Y), 0}, mgl32.Vec3{0.0, 0.0, 1.0}, averageUV})
 
 			e1 = vo.Edges[e1].ENext
 		}
@@ -352,8 +355,8 @@ func createDelaunayEdgesGLBuffer(d sc.Delaunay, rangeX, rangeY float64) geo.Arra
 	for _, e := range dEdges {
 		uv1 := mgl32.Vec2{float32(e.V1.X / rangeX), float32(e.V1.Y / rangeY)}
 		uv2 := mgl32.Vec2{float32(e.V1.X / rangeX), float32(e.V1.Y / rangeY)}
-		mesh = append(mesh, geo.Mesh{mgl32.Vec3{float32(e.V1.X), float32(e.V1.Y), float32(e.V1.Z)}, normal, uv1})
-		mesh = append(mesh, geo.Mesh{mgl32.Vec3{float32(e.V2.X), float32(e.V2.Y), float32(e.V2.Z)}, normal, uv2})
+		mesh = append(mesh, geo.Mesh{mgl32.Vec3{float32(e.V1.X), float32(e.V1.Y), 0}, normal, uv1})
+		mesh = append(mesh, geo.Mesh{mgl32.Vec3{float32(e.V2.X), float32(e.V2.Y), 0}, normal, uv2})
 	}
 
 	return geo.GenerateGeometryArrayAttributes(&mesh, len(mesh))
@@ -367,7 +370,7 @@ func createDelaunayPointsGLBuffer(d sc.Delaunay, rangeX, rangeY float64) geo.Geo
 
 	for i, v := range d.Vertices {
 		uv1 := mgl32.Vec2{float32(v.Pos.X / rangeX), float32(v.Pos.Y / rangeY)}
-		mesh = append(mesh, geo.Mesh{mgl32.Vec3{float32(v.Pos.X), float32(v.Pos.Y), float32(v.Pos.Z)}, normal, uv1})
+		mesh = append(mesh, geo.Mesh{mgl32.Vec3{float32(v.Pos.X), float32(v.Pos.Y), 0}, normal, uv1})
 
 		indices = append(indices, uint32(i))
 	}
@@ -385,7 +388,7 @@ func createConvexHullGLBuffer(d sc.Delaunay, rangeX, rangeY float64) geo.Geometr
 
 	for i, v := range ch {
 		uv1 := mgl32.Vec2{float32(v.X / rangeX), float32(v.Y / rangeY)}
-		mesh = append(mesh, geo.Mesh{mgl32.Vec3{float32(v.X), float32(v.Y), float32(v.Z)}, normal, uv1})
+		mesh = append(mesh, geo.Mesh{mgl32.Vec3{float32(v.X), float32(v.Y), 0}, normal, uv1})
 
 		indices = append(indices, uint32(i))
 	}
