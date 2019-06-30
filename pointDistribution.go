@@ -7,7 +7,9 @@ import (
 	"math/rand"
 
 	//v "github.com/MauriceGit/mtVector"
-	sc "mtSweepCircle"
+	//sc "mtSweepCircle"
+
+	sc "github.com/MauriceGit/sweepcircle"
 )
 
 func calcExpectedRadius(count int, rangeX, rangeY, margin float64) float64 {
