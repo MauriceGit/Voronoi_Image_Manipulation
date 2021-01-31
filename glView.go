@@ -475,7 +475,8 @@ func recalculateDelaunayTriangulation() {
 
 	//redefineProjectionMatrices()
 
-	gl.MemoryBarrier(gl.ALL_BARRIER_BITS)
+	// Commented because of OpenGL 3.3 missmatch - Core in OpenGL 4.2
+	//gl.MemoryBarrier(gl.ALL_BARRIER_BITS)
 
 }
 
@@ -500,7 +501,9 @@ func defineMatrices(shader uint32) {
 }
 
 func renderDelaunay() {
-	gl.BindFramebuffer(gl.FRAMEBUFFER, g_sceneFboMS)
+	// Commented because of OpenGL 3.3 missmatch - Core in OpenGL 4.3. No Multisampling.
+	//gl.BindFramebuffer(gl.FRAMEBUFFER, g_sceneFboMS)
+	gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
 	gl.ClearColor(0, 0, 0, 0)
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 	gl.Viewport(0, 0, int32(g_windowWidth), int32(g_windowHeight))
@@ -563,11 +566,12 @@ func renderDelaunay() {
 		gl.DrawArrays(gl.LINES, 0, g_voronoiEdgesGLBuffer.VertexCount)
 	}
 
+	// Commented because of OpenGL 3.3 missmatch - Core in OpenGL 4.3. No Multisampling.
 	// Multisampling
-	gl.BindFramebuffer(gl.READ_FRAMEBUFFER, g_sceneFboMS)
-	gl.BindFramebuffer(gl.DRAW_FRAMEBUFFER, 0)
-	gl.DrawBuffer(gl.BACK)
-	gl.BlitFramebuffer(0, 0, int32(g_windowWidth), int32(g_windowHeight), 0, 0, int32(g_windowWidth), int32(g_windowHeight), gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT, gl.NEAREST)
+	//gl.BindFramebuffer(gl.READ_FRAMEBUFFER, g_sceneFboMS)
+	//gl.BindFramebuffer(gl.DRAW_FRAMEBUFFER, 0)
+	//gl.DrawBuffer(gl.BACK)
+	//gl.BlitFramebuffer(0, 0, int32(g_windowWidth), int32(g_windowHeight), 0, 0, int32(g_windowWidth), int32(g_windowHeight), gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT, gl.NEAREST)
 
 }
 
@@ -577,7 +581,8 @@ func prepareGLForNewTexture(imagePath string) {
 	gl.DeleteTextures(1, &g_delaunayTexture.TextureHandle)
 	gl.DeleteTextures(1, &g_sceneColorTexMS)
 	gl.DeleteTextures(1, &g_sceneDepthTexMS)
-	gl.DeleteFramebuffers(1, &g_sceneFboMS)
+	// Commented because of OpenGL 3.3 missmatch - Core in OpenGL 4.3. No Multisampling.
+	//gl.DeleteFramebuffers(1, &g_sceneFboMS)
 
 	g_delaunayTexture = mtgl.CreateImageTexture(imagePath, false)
 
@@ -596,7 +601,8 @@ func prepareGLForNewTexture(imagePath string) {
 
 	g_window.SetSize(g_windowWidth, g_windowHeight)
 
-	g_sceneFboMS = mtgl.CreateFbo(&g_sceneColorTexMS, &g_sceneDepthTexMS, int32(g_windowWidth), int32(g_windowHeight), true, 16, false, 1)
+	// Commented because of OpenGL 3.3 missmatch - Core in OpenGL 4.3. No Multisampling.
+	//g_sceneFboMS = mtgl.CreateFbo(&g_sceneColorTexMS, &g_sceneDepthTexMS, int32(g_windowWidth), int32(g_windowHeight), false, 16, false, 1)
 
 	gl.UseProgram(g_delaunayTrianglesShader)
 	defineMatrices(g_delaunayTrianglesShader)
