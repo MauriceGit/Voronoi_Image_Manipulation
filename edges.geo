@@ -4,6 +4,8 @@ layout (lines) in;
 layout (line_strip, max_vertices = 2) out;
 
 uniform sampler2D imageTexture;
+uniform vec3 color;
+uniform bool useExternalColor;
 
 in vData
 {
@@ -20,7 +22,12 @@ void main() {
     int i;
     vec3 averageColor = vec3(0,0,0);
     for(i = 0; i < gl_in.length(); i++) {
-        averageColor += texture(imageTexture, v_in[i].uv).rgb;
+        vec4 tex = texture(imageTexture, v_in[i].uv).rgba;
+        if (useExternalColor) {
+            averageColor += mix(vec3(0), color, tex.a);
+        } else {
+            averageColor += mix(vec3(0), tex.rgb, tex.a);
+        }
     }
     averageColor /= float(gl_in.length());
 
